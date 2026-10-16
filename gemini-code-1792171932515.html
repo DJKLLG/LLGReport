@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Staff Incident Reporting System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans text-gray-800">
+
+  <!-- Header -->
+  <header class="bg-slate-900 text-white py-4 px-6 shadow-md flex justify-between items-center">
+    <div>
+      <h1 class="text-xl font-bold">Staff Incident Logger</h1>
+      <p class="text-xs text-gray-400">Secure Internal Documentation Portal</p>
+    </div>
+    <button id="navBtn" onclick="toggleView()" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded text-sm font-medium transition">
+      Admin Dashboard
+    </button>
+  </header>
+
+  <main class="max-w-4xl mx-auto p-4 md:p-6">
+
+    <!-- SUBMISSION FORM VIEW (DEFAULT) -->
+    <div id="formView" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <h2 class="text-lg font-bold mb-1 text-slate-800">Submit New Incident Report</h2>
+      <p class="text-xs text-gray-500 mb-6">Submissions are encrypted and logged directly to HR management. Completed entries are protected and hidden after submission.</p>
+
+      <form id="incidentForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Staff Member Involved *</label>
+            <input type="text" id="staffName" required class="w-full border border-gray-300 rounded p-2.5 text-sm focus:ring-2 focus:ring-slate-500 outline-none" placeholder="e.g. Dan H">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Logged By *</label>
+            <input type="text" id="loggedBy" required class="w-full border border-gray-300 rounded p-2.5 text-sm focus:ring-2 focus:ring-slate-500 outline-none" placeholder="Your name / title">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Date of Incident *</label>
+            <input type="date" id="incidentDate" required class="w-full border border-gray-300 rounded p-2.5 text-sm focus:ring-2 focus:ring-slate-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Category *</label>
+            <select id="category" required class="w-full border border-gray-300 rounded p-2.5 text-sm focus:ring-2 focus:ring-slate-500 outline-none">
+              <option value="">Select category...</option>
+              <option value="Project Timelines">Project Timelines</option>
+              <option value="Task Delegation">Task Delegation</option>
+              <option value="Stock Intake">Stock Intake</option>
+              <option value="Procurement & Directives">Procurement & Directives</option>
+              <option value="Logistics Accuracy">Logistics Accuracy</option>
+              <option value="Order Fulfillment">Order Fulfillment</option>
+              <option value="Order Picking Accuracy">Order Picking Accuracy</option>
+              <option value="Compliance & Governance">Compliance & Governance</option>
+              <option value="Conduct & Professionalism">Conduct & Professionalism</option>
+              <option value="Inventory Accuracy">Inventory Accuracy</option>
+              <option value="Logistics & Financial Alignment">Logistics & Financial Alignment</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Factual Description of What Happened *</label>
+          <textarea id="description" rows="4" required class="w-full border border-gray-300 rounded p-2.5 text-sm focus:ring-2 focus:ring-slate-500 outline-none" placeholder="Detail objective facts, times, instructions given, and actual outcomes..."></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Business / Team Impact *</label>
+          <textarea id="impact" rows="2" required class="w-full border border-gray-300 rounded p-2.5 text-sm focus:ring-2 focus:ring-slate-500 outline-none" placeholder="Describe delays, financial impact, extra work created, or customer effects..."></textarea>
+        </div>
+
+        <button type="submit" id="submitBtn" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-medium py-3 rounded text-sm transition">
+          Submit Incident Record
+        </button>
+      </form>
+    </div>
+
+    <!-- PIN AUTH MODAL -->
+    <div id="pinModal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm text-center">
+        <h3 class="text-lg font-bold text-gray-800 mb-2">Admin Security Gate</h3>
+        <p class="text-xs text-gray-500 mb-4">Enter management PIN to view logged records (Default PIN: <span class="font-mono bg-gray-200 px-1 rounded">1234</span>)</p>
+        <input type="password" id="pinInput" class="w-full border border-gray-300 rounded p-3 text-center text-xl tracking-widest mb-4 focus:ring-2 focus:ring-slate-500 outline-none" placeholder="••••">
+        <div class="flex gap-2">
+          <button onclick="closePinModal()" class="w-1/2 border border-gray-300 py-2 rounded text-sm font-medium hover:bg-gray-50">Cancel</button>
+          <button onclick="verifyPin()" class="w-1/2 bg-slate-800 text-white py-2 rounded text-sm font-medium hover:bg-slate-900">Unlock</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN DASHBOARD VIEW -->
+    <div id="adminView" class="hidden space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between bg-white p-4 rounded-lg shadow-sm border border-gray-200 gap-4">
+        <div>
+          <h2 class="text-lg font-bold text-slate-800">Master Incident Register</h2>
+          <p class="text-xs text-gray-500">Live API records pulled directly from Google Sheets</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <input type="text" id="searchInput" oninput="filterIncidents()" placeholder="Search records..." class="border border-gray-300 rounded p-2 text-xs w-48 outline-none">
+          <button onclick="fetchIncidents()" class="bg-gray-100 hover:bg-gray-200 border border-gray-300 px-3 py-2 rounded text-xs font-medium">Refresh</button>
+        </div>
+      </div>
+
+      <div id="loadingState" class="hidden text-center py-8 text-sm text-gray-500">
+        Loading records from Google Sheets...
+      </div>
+
+      <div id="incidentsContainer" class="space-y-3"></div>
+    </div>
+
+  </main>
+
+  <script>
+    // YOUR UPDATED GOOGLE APPS SCRIPT WEB APP URL:
+    const API_URL = "https://script.google.com/macros/s/AKfycbzjYKYoP-yvzENcq5wcL0JFBQPp_6TKC3DRminxYWoxNdDEgSXlkTd2J9qrEgaYRKht/exec"; 
+    const ADMIN_PIN = "1234";
+    let isUnlocked = false;
+    let allIncidents = [];
+
+    // Set today's date in form by default
+    document.getElementById('incidentDate').value = new Date().toISOString().split('T')[0];
+
+    async function handleFormSubmit(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.innerText = "Submitting to Google Sheets...";
+
+      const payload = {
+        staffName: document.getElementById('staffName').value,
+        loggedBy: document.getElementById('loggedBy').value,
+        incidentDate: document.getElementById('incidentDate').value,
+        category: document.getElementById('category').value,
+        description: document.getElementById('description').value,
+        impact: document.getElementById('impact').value
+      };
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+        
+        if (result.status === 'success') {
+          alert('Record successfully saved to central database.');
+          document.getElementById('incidentForm').reset();
+          document.getElementById('incidentDate').value = new Date().toISOString().split('T')[0];
+        } else {
+          alert('Error saving record: ' + result.message);
+        }
+      } catch (err) {
+        alert('Network error communicating with Google Sheets API.');
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Submit Incident Record";
+      }
+    }
+
+    function toggleView() {
+      if (!isUnlocked) {
+        document.getElementById('pinModal').classList.remove('hidden');
+      } else {
+        showFormView();
+      }
+    }
+
+    function closePinModal() {
+      document.getElementById('pinModal').classList.add('hidden');
+      document.getElementById('pinInput').value = '';
+    }
+
+    function verifyPin() {
+      const pin = document.getElementById('pinInput').value;
+      if (pin === ADMIN_PIN) {
+        isUnlocked = true;
+        closePinModal();
+        showAdminView();
+      } else {
+        alert('Incorrect PIN');
+      }
+    }
+
+    function showFormView() {
+      document.getElementById('formView').classList.remove('hidden');
+      document.getElementById('adminView').classList.add('hidden');
+      document.getElementById('navBtn').innerText = "Admin Dashboard";
+    }
+
+    function showAdminView() {
+      document.getElementById('formView').classList.add('hidden');
+      document.getElementById('adminView').classList.remove('hidden');
+      document.getElementById('navBtn').innerText = "Submit Incident Form";
+      fetchIncidents();
+    }
+
+    async function fetchIncidents() {
+      document.getElementById('loadingState').classList.remove('hidden');
+      document.getElementById('incidentsContainer').innerHTML = '';
+      
+      try {
+        const res = await fetch(API_URL);
+        allIncidents = await res.json();
+        renderIncidents(allIncidents);
+      } catch (err) {
+        document.getElementById('incidentsContainer').innerHTML = `<p class="text-red-500 text-xs text-center">Failed to fetch records.</p>`;
+      } finally {
+        document.getElementById('loadingState').classList.add('hidden');
+      }
+    }
+
+    function renderIncidents(data) {
+      const container = document.getElementById('incidentsContainer');
+      container.innerHTML = '';
+
+      if (!data || data.length === 0) {
+        container.innerHTML = '<p class="text-sm text-gray-500 text-center py-6">No incidents found.</p>';
+        return;
+      }
+
+      // Reverse order so newest are on top
+      [...data].reverse().forEach(inc => {
+        const card = document.createElement('div');
+        card.className = "bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:border-slate-400 transition";
+        card.innerHTML = `
+          <div class="flex justify-between items-start mb-2">
+            <div>
+              <span class="font-mono text-xs text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">${inc.id || 'INC'}</span>
+              <span class="font-bold text-sm text-slate-800 ml-2">${inc.staffName}</span>
+              <span class="text-xs text-gray-400 ml-2">Logged by ${inc.loggedBy}</span>
+            </div>
+            <span class="text-xs bg-slate-800 text-white px-2 py-0.5 rounded font-medium">${inc.category}</span>
+          </div>
+          <p class="text-xs font-semibold text-gray-500 mb-2">Date: ${inc.incidentDate}</p>
+          <div class="text-sm text-gray-700 bg-gray-50 p-3 rounded mb-2 border border-gray-100">${inc.description}</div>
+          <p class="text-xs text-red-700 font-medium"><strong>Impact:</strong> ${inc.impact}</p>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function filterIncidents() {
+      const q = document.getElementById('searchInput').value.toLowerCase();
+      const filtered = allIncidents.filter(i => 
+        (i.staffName && i.staffName.toLowerCase().includes(q)) ||
+        (i.category && i.category.toLowerCase().includes(q)) ||
+        (i.description && i.description.toLowerCase().includes(q))
+      );
+      renderIncidents(filtered);
+    }
+  </script>
+</body>
+</html>
